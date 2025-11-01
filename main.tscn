@@ -1,0 +1,70 @@
+[gd_scene load_steps=8 format=3 uid="uid://qh82rqe3tbhj"]
+
+[ext_resource type="Script" uid="uid://bc6vnx4qul2v6" path="res://player.gd" id="1_h2yge"]
+[ext_resource type="Texture2D" uid="uid://nh6fsbgq7wam" path="res://icon.svg" id="2_1bvp3"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_7mycd"]
+size = Vector2(20, 20)
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_0xm2m"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_0xm2m"]
+size = Vector3(20, 0.1, 20)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_272bh"]
+radius = 0.4
+height = 1.2
+
+[sub_resource type="GDScript" id="GDScript_0xm2m"]
+script/source = "extends Node3D
+
+@export var target_path: NodePath
+@export var follow_lerp := 8.0   # higher = snappier follow
+
+var target: Node3D
+
+func _ready():
+	target = get_node_or_null(target_path)
+
+func _process(delta):
+	if not target:
+		return
+
+	# Smoothly interpolate position
+	var current_pos = global_transform.origin
+	var target_pos = target.global_transform.origin
+	global_transform.origin = current_pos.lerp(target_pos, delta * follow_lerp)
+"
+
+[node name="Main" type="Node3D"]
+
+[node name="Ground" type="MeshInstance3D" parent="."]
+mesh = SubResource("PlaneMesh_7mycd")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="Ground"]
+physics_material_override = SubResource("PhysicsMaterial_0xm2m")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground/StaticBody3D"]
+shape = SubResource("BoxShape3D_0xm2m")
+
+[node name="Player" type="CharacterBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.9870722, 0)
+script = ExtResource("1_h2yge")
+
+[node name="Sprite3D" type="Sprite3D" parent="Player"]
+billboard = 2
+texture = ExtResource("2_1bvp3")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
+shape = SubResource("CapsuleShape3D_272bh")
+
+[node name="CameraRig" type="Node3D" parent="."]
+script = SubResource("GDScript_0xm2m")
+target_path = NodePath("../Player")
+
+[node name="Camera3D" type="Camera3D" parent="CameraRig"]
+transform = Transform3D(0.99999994, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 5, 8)
+
+[node name="sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7340975, 0)
+shadow_enabled = true
