@@ -4,7 +4,7 @@ extends CharacterBody3D
 @export var sprint_multiplier := 1.6
 @export var acceleration := 12.0
 @export var friction := 10.0
-@export var jump_velocity := 6.0
+@export var jump_velocity := 8.0
 @export var gravity := 18.0
 
 var input_dir := Vector3.ZERO

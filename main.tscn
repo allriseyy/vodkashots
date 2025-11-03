@@ -1,19 +1,26 @@
-[gd_scene load_steps=8 format=3 uid="uid://qh82rqe3tbhj"]
+[gd_scene load_steps=16 format=3 uid="uid://qh82rqe3tbhj"]
 
+[ext_resource type="Texture2D" uid="uid://cu7i0b353qw5c" path="res://texture/wood/textures/wood_table_disp_4k.png" id="1_0xm2m"]
 [ext_resource type="Script" uid="uid://bc6vnx4qul2v6" path="res://player.gd" id="1_h2yge"]
-[ext_resource type="Texture2D" uid="uid://nh6fsbgq7wam" path="res://icon.svg" id="2_1bvp3"]
+[ext_resource type="Texture2D" uid="uid://3f88dywc57ys" path="res://texture/wood/textures/wood_table_diff_4k.jpg" id="2_h2yge"]
 
 [sub_resource type="PlaneMesh" id="PlaneMesh_7mycd"]
 size = Vector2(20, 20)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ig7tw"]
+albedo_texture = ExtResource("1_0xm2m")
 
 [sub_resource type="PhysicsMaterial" id="PhysicsMaterial_0xm2m"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_0xm2m"]
 size = Vector3(20, 0.1, 20)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_272bh"]
-radius = 0.4
-height = 1.2
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_ig7tw"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_ig7tw"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_0xm2m"]
+albedo_color = Color(1, 0, 0, 1)
 
 [sub_resource type="GDScript" id="GDScript_0xm2m"]
 script/source = "extends Node3D
@@ -36,10 +43,20 @@ func _process(delta):
 	global_transform.origin = current_pos.lerp(target_pos, delta * follow_lerp)
 "
 
+[sub_resource type="BoxMesh" id="BoxMesh_0xm2m"]
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_h2yge"]
+albedo_texture = ExtResource("2_h2yge")
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_h2yge"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_1bvp3"]
+
 [node name="Main" type="Node3D"]
 
 [node name="Ground" type="MeshInstance3D" parent="."]
 mesh = SubResource("PlaneMesh_7mycd")
+surface_material_override/0 = SubResource("StandardMaterial3D_ig7tw")
 
 [node name="StaticBody3D" type="StaticBody3D" parent="Ground"]
 physics_material_override = SubResource("PhysicsMaterial_0xm2m")
@@ -51,12 +68,12 @@ shape = SubResource("BoxShape3D_0xm2m")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.9870722, 0)
 script = ExtResource("1_h2yge")
 
-[node name="Sprite3D" type="Sprite3D" parent="Player"]
-billboard = 2
-texture = ExtResource("2_1bvp3")
-
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Player"]
-shape = SubResource("CapsuleShape3D_272bh")
+shape = SubResource("CapsuleShape3D_ig7tw")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Player"]
+mesh = SubResource("CapsuleMesh_ig7tw")
+surface_material_override/0 = SubResource("StandardMaterial3D_0xm2m")
 
 [node name="CameraRig" type="Node3D" parent="."]
 script = SubResource("GDScript_0xm2m")
@@ -65,6 +82,47 @@ target_path = NodePath("../Player")
 [node name="Camera3D" type="Camera3D" parent="CameraRig"]
 transform = Transform3D(0.99999994, 0, 0, 0, 0.70710677, 0.70710677, 0, -0.70710677, 0.70710677, 0, 5, 8)
 
-[node name="sun" type="DirectionalLight3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 7.7340975, 0)
-shadow_enabled = true
+[node name="box1" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 2.4735875, 0.83790064, 0)
+mesh = SubResource("BoxMesh_0xm2m")
+surface_material_override/0 = SubResource("StandardMaterial3D_h2yge")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="box1"]
+physics_material_override = SubResource("PhysicsMaterial_h2yge")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="box1/StaticBody3D"]
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="box2" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 2.4735875, 2.5189216, -2.4311173)
+mesh = SubResource("BoxMesh_0xm2m")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="box2"]
+physics_material_override = SubResource("PhysicsMaterial_h2yge")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="box2/StaticBody3D"]
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="box3" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 2.4735875, 6.2606215, -7.758531)
+mesh = SubResource("BoxMesh_0xm2m")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="box3"]
+physics_material_override = SubResource("PhysicsMaterial_h2yge")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="box3/StaticBody3D"]
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="box4" type="MeshInstance3D" parent="."]
+transform = Transform3D(1.5, 0, 0, 0, 1.5, 0, 0, 0, 1.5, 2.4735875, 4.373208, -4.8306885)
+mesh = SubResource("BoxMesh_0xm2m")
+
+[node name="StaticBody3D" type="StaticBody3D" parent="box4"]
+physics_material_override = SubResource("PhysicsMaterial_h2yge")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="box4/StaticBody3D"]
+shape = SubResource("BoxShape3D_1bvp3")
+
+[node name="OmniLight3D" type="OmniLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 10.126696, 0)
+omni_range = 20.43
