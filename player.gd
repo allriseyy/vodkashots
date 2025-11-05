@@ -13,6 +13,7 @@ var velocity_h := Vector3.ZERO
 func _ready() -> void:
 	floor_snap_length = 0.3
 	up_direction = Vector3.UP
+	add_to_group("player")  # 🔥 so enemies & spawner can find you
 
 func _get_input_dir() -> Vector3:
 	var dir := Vector3.ZERO
@@ -28,18 +29,19 @@ func _get_input_dir() -> Vector3:
 
 func _physics_process(delta: float) -> void:
 	input_dir = _get_input_dir()
+
 	var target_speed := move_speed
 	if Input.is_action_pressed("sprint"):
 		target_speed *= sprint_multiplier
 
 	var target_vel := input_dir * target_speed
 
-	# Accelerate / decelerate on the horizontal plane
+	# Accelerate or decelerate on the horizontal plane
 	var accel := acceleration if target_vel.length() > 0.01 else friction
 	var diff := target_vel - velocity_h
 	velocity_h += diff.limit_length(accel * delta)
 
-	# Gravity & Jump
+	# Gravity and Jump
 	if not is_on_floor():
 		velocity.y -= gravity * delta
 	else:
@@ -48,12 +50,12 @@ func _physics_process(delta: float) -> void:
 		else:
 			velocity.y = 0.0
 
-	# Combine horizontal and vertical velocity
+	# Combine horizontal + vertical velocity
 	velocity.x = velocity_h.x
 	velocity.z = velocity_h.z
 
 	move_and_slide()
 
-	# Face movement direction
+	# Face movement direction (for top-down or third-person)
 	if velocity_h.length() > 0.05:
 		look_at(global_transform.origin + Vector3(velocity_h.x, 0, velocity_h.z), Vector3.UP)
