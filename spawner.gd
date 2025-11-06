@@ -72,7 +72,6 @@ func _on_timeout() -> void:
 		enemy.global_position = _last_spawn_pos  # simpler and safer than global_transform.origin
 
 		_alive += 1
-		print("Spawned enemy at: ", _last_spawn_pos)
 		enemy.tree_exited.connect(func(): _alive = max(_alive - 1, 0))
 
 # Try navmesh snap first (no collider needed), then physics ray, with retries.

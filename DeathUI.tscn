@@ -1,0 +1,54 @@
+[gd_scene load_steps=2 format=3 uid="uid://b6lok5qtjmv17"]
+
+[ext_resource type="Script" uid="uid://vbjci1b0se6o" path="res://DeathUI.gd" id="1_xukid"]
+
+[node name="DeathUI" type="Control"]
+process_mode = 3
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_xukid")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+color = Color(0.22310278, 0.22310293, 0.22310287, 1)
+
+[node name="Label" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -276.0
+offset_top = 1.0
+offset_right = -129.64233
+offset_bottom = 97.0
+grow_horizontal = 2
+scale = Vector2(3.775, 3.775)
+text = "YOU DIED"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 1
+
+[node name="Button" type="Button" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -59.0
+offset_top = -236.0
+offset_right = 22.0
+offset_bottom = -205.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 16
+text = "Try Again"

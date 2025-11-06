@@ -1,0 +1,23 @@
+[gd_scene load_steps=5 format=3 uid="uid://dtm1o7685dt1i"]
+
+[ext_resource type="Script" uid="uid://cyvice62x3ouw" path="res://bullet.gd" id="1_ayd6b"]
+
+[sub_resource type="SphereShape3D" id="SphereShape3D_4s4u5"]
+
+[sub_resource type="CylinderMesh" id="CylinderMesh_ayd6b"]
+top_radius = 0.0
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_ayd6b"]
+albedo_color = Color(1, 1, 0, 1)
+
+[node name="Bullet" type="Area3D"]
+script = ExtResource("1_ayd6b")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("SphereShape3D_4s4u5")
+debug_fill = false
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="CollisionShape3D"]
+transform = Transform3D(0.5, 0, 0, 0, -2.1855694e-08, 0.5, 0, -0.5, -2.1855694e-08, 0, 0, 0)
+mesh = SubResource("CylinderMesh_ayd6b")
+surface_material_override/0 = SubResource("StandardMaterial3D_ayd6b")

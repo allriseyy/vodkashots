@@ -12,12 +12,12 @@ var gravity := ProjectSettings.get_setting("physics/3d/default_gravity") as floa
 func _ready() -> void:
 	# start a bit above ground to avoid clipping
 	global_transform.origin += Vector3.UP * 1.0
+	add_to_group("enemies")
 
 	# agent setup
 	agent.path_desired_distance = 0.25
 	agent.target_desired_distance = 0.25
 	agent.avoidance_enabled = true
-	# use the world's nav map (use method, not property assignment)
 	agent.set_navigation_map(get_world_3d().navigation_map)
 
 	# find the player by group
@@ -67,3 +67,17 @@ func _physics_process(delta: float) -> void:
 	look_pos.y = global_transform.origin.y
 	var target_basis := (Transform3D(Basis(), global_transform.origin).looking_at(look_pos, Vector3.UP)).basis
 	global_transform.basis = global_transform.basis.slerp(target_basis, clamp(turn_speed * delta, 0.0, 1.0))
+
+	# check collision with player
+	_check_player_collision()
+
+
+func _check_player_collision() -> void:
+	if player == null or !is_instance_valid(player):
+		return
+
+	# Simple radius-based proximity check
+	var distance := global_transform.origin.distance_to(player.global_transform.origin)
+	if distance < 1.0:  # adjust depending on your model scale
+		if "die" in player:
+			player.die()
