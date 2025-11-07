@@ -1,0 +1,11 @@
+[gd_scene load_steps=2 format=3 uid="uid://ca1ubicep2aae"]
+
+[ext_resource type="Script" uid="uid://com8i4m6bo3rg" path="res://HUD.gd" id="1_dy835"]
+
+[node name="HUD" type="CanvasLayer"]
+script = ExtResource("1_dy835")
+
+[node name="ScoreLabel" type="Label" parent="."]
+offset_right = 354.0
+offset_bottom = 181.0
+theme_override_font_sizes/font_size = 50

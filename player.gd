@@ -118,7 +118,9 @@ func die() -> void:
 	print("💀 Player died!")
 	# Optional: disable movement
 	set_physics_process(false)
-
+	# Reset the score when the player dies
+	GameManager.score = 0
+	GameManager.emit_signal("score_changed", GameManager.score)
 	# Optional: play animation, show UI, restart, etc.
 	#await get_tree().create_timer(1.0).timeout
 	get_tree().reload_current_scene()

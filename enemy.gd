@@ -81,3 +81,6 @@ func _check_player_collision() -> void:
 	if distance < 1.0:  # adjust depending on your model scale
 		if "die" in player:
 			player.die()
+
+func die():
+	queue_free()

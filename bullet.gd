@@ -17,7 +17,8 @@ func _ready() -> void:
 func _physics_process(delta: float) -> void:
 	global_transform.origin += velocity * delta
 
-func _on_body_entered(body: Node) -> void:
-	if body != null and body.is_in_group("enemies"):
-		body.queue_free()   # make enemy disappear
-		queue_free()        # bullet disappears too
+func _on_body_entered(body):
+	if body.is_in_group("enemies"):
+		body.die()
+		GameManager.add_score(1)
+		queue_free()

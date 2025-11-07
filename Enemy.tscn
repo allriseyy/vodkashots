@@ -11,6 +11,9 @@ albedo_color = Color(0, 0, 1, 1)
 
 [node name="Enemy" type="CharacterBody3D"]
 script = ExtResource("1_tt7e2")
+speed = null
+acceleration = null
+turn_speed = null
 
 [node name="NavigationAgent3D" type="NavigationAgent3D" parent="."]
 
