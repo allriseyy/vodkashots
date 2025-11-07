@@ -14,6 +14,12 @@ extends CharacterBody3D
 @export var max_target_distance: float = 80.0      # only shoot if enemy is within this range
 @export var muzzle_offset: Vector3 = Vector3(0, 1.2, 0)  # spawn a bit above player origin
 
+# --- Shotgun (H key) ---
+@export var shotgun_pellets: int = 100               # number of pellets
+@export var shotgun_spread_deg: float = 360.0      # total spread arc (degrees) across pellets
+@export var shotgun_cooldown: float = 0.8          # slower than single-shot
+@export var shotgun_vertical_jitter_deg: float = 2.5  # small random vertical jitter
+
 var _shoot_timer: float = 0.0
 
 var input_dir := Vector3.ZERO
@@ -23,6 +29,13 @@ func _ready() -> void:
 	floor_snap_length = 0.3
 	up_direction = Vector3.UP
 	add_to_group("player")  # so enemies & spawner can find you
+
+	# Ensure an input action "shotgun" mapped to H exists (so user doesn't have to set it up)
+	if not InputMap.has_action("shotgun"):
+		InputMap.add_action("shotgun")
+		var ev := InputEventKey.new()
+		ev.keycode = KEY_H
+		InputMap.action_add_event("shotgun", ev)
 
 func _get_input_dir() -> Vector3:
 	var dir := Vector3.ZERO
@@ -70,9 +83,15 @@ func _physics_process(delta: float) -> void:
 	if velocity_h.length() > 0.05:
 		look_at(global_transform.origin + Vector3(velocity_h.x, 0, velocity_h.z), Vector3.UP)
 
-	# ---------- Auto-fire ----------
+	# ---------- Firing ----------
 	_shoot_timer -= delta
-	if _shoot_timer <= 0.0:
+
+	# Shotgun takes priority and does NOT need a target
+	if _shoot_timer <= 0.0 and Input.is_action_pressed("shotgun"):
+		_shoot_shotgun_facing()
+		_shoot_timer = shotgun_cooldown
+	elif _shoot_timer <= 0.0:
+		# Normal auto-fire only if there is a target
 		var target := _get_nearest_enemy()
 		if target != null:
 			_shoot_at(target)
@@ -85,7 +104,7 @@ func _get_nearest_enemy() -> Node3D:
 	var best_d2 := max_target_distance * max_target_distance
 	var my_pos := global_transform.origin
 	for e in enemies:
-		if e == null or !is_instance_valid(e): 
+		if e == null or !is_instance_valid(e):
 			continue
 		var pos := (e as Node3D).global_transform.origin
 		var d2 := my_pos.distance_squared_to(pos)
@@ -94,33 +113,64 @@ func _get_nearest_enemy() -> Node3D:
 			best = e
 	return best
 
-# Spawn and launch a bullet toward the given enemy
+# Spawn and launch a bullet toward the given enemy (single)
 func _shoot_at(target: Node3D) -> void:
-	if bullet_scene == null:
-		return
-	if target == null or !is_instance_valid(target):
+	if bullet_scene == null or target == null or !is_instance_valid(target):
 		return
 
 	var start_pos := global_transform.origin + muzzle_offset
 	var dir := (target.global_transform.origin - start_pos).normalized()
 
 	var bullet := bullet_scene.instantiate()
-
-	# Add to scene FIRST so global_* setters work without warnings
 	get_tree().current_scene.add_child(bullet)
+	bullet.global_position = start_pos
+	bullet.look_at(start_pos + dir, Vector3.UP)
+	bullet.velocity = dir * bullet.speed
 
-	# Now safely set position/orientation and velocity
+# Shotgun: spread from the player's facing direction (no targeting)
+func _shoot_shotgun_facing() -> void:
+	if bullet_scene == null or shotgun_pellets <= 0:
+		return
+
+	var start_pos := global_transform.origin + muzzle_offset
+	# Player forward is -Z in Godot
+	var base_dir := (-global_transform.basis.z).normalized()
+
+	var pellets := shotgun_pellets
+	var spread := shotgun_spread_deg
+	if pellets == 1:
+		_spawn_bullet(start_pos, base_dir)
+		return
+
+	var step := spread / float(pellets - 1)
+	var start_angle := -spread * 0.5
+
+	for i in range(pellets):
+		var yaw_deg := start_angle + step * i
+		var yaw_rad := deg_to_rad(yaw_deg)
+
+		# Rotate around Y (horizontal spread)
+		var dir := (Basis(Vector3.UP, yaw_rad) * base_dir).normalized()
+
+		# Add tiny pitch jitter for a more natural cone
+		if shotgun_vertical_jitter_deg > 0.0:
+			var pitch_rad := deg_to_rad(randf_range(-shotgun_vertical_jitter_deg, shotgun_vertical_jitter_deg))
+			var axis := dir.cross(Vector3.UP).normalized()
+			if axis.length() > 0.0001:
+				dir = (Basis(axis, pitch_rad) * dir).normalized()
+
+		_spawn_bullet(start_pos, dir)
+
+func _spawn_bullet(start_pos: Vector3, dir: Vector3) -> void:
+	var bullet := bullet_scene.instantiate()
+	get_tree().current_scene.add_child(bullet)
 	bullet.global_position = start_pos
 	bullet.look_at(start_pos + dir, Vector3.UP)
 	bullet.velocity = dir * bullet.speed
 
 func die() -> void:
 	print("💀 Player died!")
-	# Optional: disable movement
 	set_physics_process(false)
-	# Reset the score when the player dies
 	GameManager.score = 0
 	GameManager.emit_signal("score_changed", GameManager.score)
-	# Optional: play animation, show UI, restart, etc.
-	#await get_tree().create_timer(1.0).timeout
 	get_tree().reload_current_scene()
