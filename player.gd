@@ -1,6 +1,7 @@
 # player.gd
 extends CharacterBody3D
 
+# -------- Movement / Physics (yours) --------
 @export var move_speed := 4.5
 @export var sprint_multiplier := 1.6
 @export var acceleration := 12.0
@@ -8,34 +9,50 @@ extends CharacterBody3D
 @export var jump_velocity := 8.0
 @export var gravity := 18.0
 
-# --- Shooting / Auto-fire ---
+# -------- Shooting / Auto-fire (yours) --------
 @export var bullet_scene: PackedScene
-@export var shoot_cooldown: float = 0.25          # seconds between shots
-@export var max_target_distance: float = 80.0      # only shoot if enemy is within this range
-@export var muzzle_offset: Vector3 = Vector3(0, 1.2, 0)  # spawn a bit above player origin
+@export var shoot_cooldown: float = 0.25
+@export var max_target_distance: float = 80.0
+@export var muzzle_offset: Vector3 = Vector3(0, 1.2, 0)
 
-# --- Shotgun (H key) ---
-@export var shotgun_pellets: int = 100               # number of pellets
-@export var shotgun_spread_deg: float = 360.0      # total spread arc (degrees) across pellets
-@export var shotgun_cooldown: float = 0.8          # slower than single-shot
-@export var shotgun_vertical_jitter_deg: float = 2.5  # small random vertical jitter
+# -------- Shotgun (E key) (yours) --------
+@export var shotgun_pellets: int = 100
+@export var shotgun_spread_deg: float = 360.0
+@export var shotgun_cooldown: float = 0.8
+@export var shotgun_vertical_jitter_deg: float = 2.5
+
+# -------- Animation (new) --------
+# Put an AnimationTree on the Player node, set its "Anim Player" to the model's AnimationPlayer,
+# and create a StateMachine with states named to match these.
+@export var idle_anim_name: String = "Idle"
+@export var walk_anim_name: String = "Walk"
+@export_range(0.0, 1.0, 0.01) var walk_threshold_speed: float = 0.10  # switch to Walk when horizontal speed > this
+
+@onready var anim_tree: AnimationTree = $AnimationTree
+@onready var state_machine: AnimationNodeStateMachinePlayback = anim_tree.get("parameters/playback")
 
 var _shoot_timer: float = 0.0
-
 var input_dir := Vector3.ZERO
 var velocity_h := Vector3.ZERO
 
 func _ready() -> void:
 	floor_snap_length = 0.3
 	up_direction = Vector3.UP
-	add_to_group("player")  # so enemies & spawner can find you
+	add_to_group("player")
 
-	# Ensure an input action "shotgun" mapped to H exists (so user doesn't have to set it up)
+	# Ensure "shotgun" exists (so E just works)
 	if not InputMap.has_action("shotgun"):
 		InputMap.add_action("shotgun")
 		var ev := InputEventKey.new()
-		ev.keycode = KEY_H
+		ev.keycode = KEY_E
 		InputMap.action_add_event("shotgun", ev)
+
+	# ---- Animation init (new) ----
+	if anim_tree:
+		anim_tree.active = true
+		# Start in Idle if present
+		if state_machine and idle_anim_name != "":
+			state_machine.travel(idle_anim_name)
 
 func _get_input_dir() -> Vector3:
 	var dir := Vector3.ZERO
@@ -82,6 +99,15 @@ func _physics_process(delta: float) -> void:
 	# Face movement direction (for top-down or third-person)
 	if velocity_h.length() > 0.05:
 		look_at(global_transform.origin + Vector3(velocity_h.x, 0, velocity_h.z), Vector3.UP)
+
+	# ---------- Animation switching (new) ----------
+	if anim_tree and state_machine:
+		var horizontal_speed := Vector2(velocity.x, velocity.z).length()
+		var desired := idle_anim_name
+		if horizontal_speed > walk_threshold_speed:
+			desired = walk_anim_name
+		if state_machine.get_current_node() != desired:
+			state_machine.travel(desired)
 
 	# ---------- Firing ----------
 	_shoot_timer -= delta
